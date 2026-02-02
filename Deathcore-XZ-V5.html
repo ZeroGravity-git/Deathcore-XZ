@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeathCore-XZ - Sistem Pencatatan Pelanggaran Siswa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Library untuk PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Font Futuristik */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-space: #0a0b14;
+            --primary-dark: #0d0f1a;
+            --primary-neon: #00f3ff;
+            --primary-purple: #9d00ff;
+            --primary-gold: #ffd700;
+            --primary-silver: #c0c0c0;
+            --secondary-metallic: #1a1d2e;
+            --accent-cyan: #00eeff;
+            --accent-magenta: #ff00ff;
+            --accent-gold: #ffcc00;
+            --text-platinum: #e6e6e6;
+            --text-silver: #b0b0b0;
+            --border-holographic: linear-gradient(45deg, #00f3ff, #9d00ff, #ff00ff);
+            --shadow-neon: rgba(0, 243, 255, 0.3);
+            --shadow-purple: rgba(157, 0, 255, 0.3);
+            --glass-bg: rgba(20, 22, 36, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--primary-space);
+            color: var(--text-platinum);
+            line-height: 1.6;
+            padding-bottom: 2rem;
+            font-family: 'Exo 2', sans-serif;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(157, 0, 255, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Efek partikel futuristik */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 243, 255, 0.03) 1px, transparent 2px),
+                radial-gradient(circle at 90% 80%, rgba(157, 0, 255, 0.03) 1px, transparent 2px);
+            background-size: 100px 100px, 150px 150px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(13, 15, 26, 0.9), rgba(26, 29, 46, 0.9));
+            backdrop-filter: blur(10px);
+            padding: 2.5rem 0;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Efek garis neon di header */
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-neon), var(--primary-purple), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { background-position: -100% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-icon {
+            font-size: 3.5rem;
+            color: var(--primary-neon);
+            filter: drop-shadow(0 0 15px var(--primary-neon));
+            background: linear-gradient(135deg, var(--primary-neon), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .logo-text h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary-neon), var(--primary-purple), var(--primary-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+            font-weight: 800;
+        }
+
+        .logo-text p {
+            color: var(--text-silver);
+            font-size: 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            flex-wrap: wrap;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(157, 0, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-item:hover::before {
+            opacity: 1;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-neon);
+            text-shadow: 0 0 15px var(--shadow-neon);
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-silver);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+            font-family: 'Rajdhani', sans-serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1100px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .logo-icon {
+                font-size: 3rem;
+            }
+        }
+
+        .input-section, .output-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efek sudut neon */
+        .input-section::before, .output-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border-top: 3px solid var(--primary-neon);
+            border-left: 3px solid var(--primary-neon);
+            border-radius: 5px 0 0 0;
+            box-shadow: 0 0 10px var(--primary-neon);
+        }
+
+        .input-section::after, .output-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            border-bottom: 3px solid var(--primary-purple);
+            border-right: 3px solid var(--primary-purple);
+            border-radius: 0 0 5px 0;
+            box-shadow: 0 0 10px var(--primary-purple);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.8rem;
+            color: var(--primary-neon);
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title i {
+            color: var(--primary-neon);
+            text-shadow: 0 0 10px var(--shadow-neon);
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.8rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.7rem;
+            color: var(--text-platinum);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(10, 12, 20, 0.8);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-platinum);
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: 'Exo 2', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 20px var(--shadow-neon);
+            background: rgba(10, 12, 20, 0.9);
+        }
+
+        .input-hint {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-silver);
+            margin-top: 0.5rem;
+            margin-left: 0.2rem;
+            font-style: italic;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-neon), var(--primary-purple));
+            color: var(--primary-dark);
+            border: none;
+            padding: 1.2rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.7s;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4), 0 0 25px var(--shadow-neon);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn i {
+            font-size: 1.3rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            background: rgba(10, 12, 20, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .status-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        .status-dot.T {
+            background-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            animation: pulse-cyan 2s infinite;
+        }
+
+        .status-dot.K {
+            background-color: var(--accent-gold);
+            color: var(--accent-gold);
+            animation: pulse-gold 2s infinite;
+        }
+
+        .status-dot.TK {
+            background-color: var(--accent-magenta);
+            color: var(--accent-magenta);
+            animation: pulse-magenta 2s infinite;
+        }
+
+        @keyframes pulse-cyan {
+            0%, 100% { box-shadow: 0 0 10px var(--accent-cyan); }
+            50% { box-shadow: 0 0 20px var(--accent-cyan); }
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 10px var(--accent-gold); }
+            50% { box-shadow: 0 0 20px var(--accent-gold); }
+        }
+
+        @keyframes pulse-magenta {
+            0%, 100% { box-shadow: 0 0 10px var(--accent-magenta); }
+            50% { box-shadow: 0 0 25px var(--accent-magenta); }
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+            background: rgba(10, 12, 20, 0.5);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(157, 0, 255, 0.2));
+            padding: 1.5rem 1.2rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text-platinum);
+            border-bottom: 2px solid var(--primary-neon);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1.2rem;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+            background: rgba(13, 15, 26, 0.5);
+            transition: all 0.3s;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(0, 243, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        .keterangan-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-block;
+            text-align: center;
+            min-width: 80px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: 'Rajdhani', sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .badge-T {
+            background: rgba(0, 238, 255, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .badge-K {
+            background: rgba(255, 204, 0, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+        }
+
+        .badge-TK {
+            background: rgba(255, 0, 255, 0.15);
+            color: var(--accent-magenta);
+            border: 1px solid var(--accent-magenta);
+        }
+
+        .keterangan-badge:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-silver);
+            cursor: pointer;
+            padding: 0.6rem;
+            transition: all 0.3s;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            color: var(--primary-neon);
+            background: rgba(0, 243, 255, 0.1);
+            transform: scale(1.2);
+            box-shadow: 0 0 15px var(--shadow-neon);
+        }
+
+        .delete-btn:hover {
+            color: var(--accent-magenta);
+            background: rgba(255, 0, 255, 0.1);
+            box-shadow: 0 0 15px var(--shadow-purple);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-silver);
+            position: relative;
+            z-index: 2;
+        }
+
+        .empty-message i {
+            font-size: 4.5rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            background: linear-gradient(135deg, var(--primary-neon), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.7;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-silver);
+            font-size: 0.9rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(0, 243, 255, 0.2);
+            position: relative;
+            z-index: 2;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        footer p:first-child {
+            color: var(--primary-neon);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .instructions {
+            background: rgba(10, 12, 20, 0.7);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            border-left: 4px solid var(--primary-neon);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .instructions h3 {
+            margin-bottom: 0.8rem;
+            color: var(--primary-neon);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
+
+        .instructions ul {
+            padding-left: 1.8rem;
+            color: var(--text-silver);
+        }
+
+        .instructions li {
+            margin-bottom: 0.6rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .instructions li::before {
+            content: '▸';
+            position: absolute;
+            left: -1.5rem;
+            color: var(--primary-neon);
+            font-weight: bold;
+        }
+
+        .instructions code {
+            background: rgba(0, 243, 255, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--primary-neon);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            font-size: 0.9rem;
+        }
+
+        /* Efek teks neon */
+        .neon-text {
+            position: relative;
+            display: inline-block;
+        }
+
+        .neon-text::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-neon), transparent);
+            border-radius: 50%;
+        }
+
+        /* Animasi kedip untuk elemen futuristik */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.9; }
+        }
+
+        .flicker {
+            animation: flicker 4s infinite;
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .logo {
+                justify-content: center;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo-icon {
+                margin-bottom: 1rem;
+            }
+
+            .stats {
+                justify-content: center;
+                gap: 1.5rem;
+            }
+            
+            .container {
+                padding: 0 1.5rem;
+            }
+            
+            .input-section, .output-section {
+                padding: 1.5rem;
+            }
+            
+            .status-indicator {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .btn {
+                padding: 1rem 1.5rem;
+            }
+        }
+        
+        /* Tombol sekunder */
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(157, 0, 255, 0.7), rgba(255, 0, 255, 0.7));
+            color: var(--text-platinum);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 12, 20, 0.5);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-neon), var(--primary-purple));
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-neon));
+        }
+        
+        /* Modal untuk konversi dan share */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-neon);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-silver);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-neon);
+            transform: scale(1.2);
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .export-option {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(157, 0, 255, 0.1));
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-platinum);
+            text-decoration: none;
+        }
+
+        .export-option:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(157, 0, 255, 0.2));
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .export-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-neon), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .export-label {
+            font-weight: 600;
+            text-align: center;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .share-option {
+            background: rgba(10, 12, 20, 0.5);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .share-option:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-neon);
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .share-icon {
+            font-size: 1.8rem;
+        }
+
+        .whatsapp { color: #25D366; }
+        .facebook { color: #1877F2; }
+        .instagram { color: #E4405F; }
+        .twitter { color: #1DA1F2; }
+        .tiktok { color: #000000; }
+        .telegram { color: #0088CC; }
+        .discord { color: #7289DA; }
+
+        .share-label {
+            font-size: 0.8rem;
+            text-align: center;
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--text-silver);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+            width: auto;
+            flex: 1;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--primary-dark);
+            color: var(--text-platinum);
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.8rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border: 1px solid var(--primary-neon);
+            font-size: 0.85rem;
+            font-family: 'Exo 2', sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Preview untuk data yang akan diekspor */
+        .export-preview {
+            background: rgba(10, 12, 20, 0.7);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-silver);
+            white-space: pre-wrap;
+        }
+        
+        /* Format output baru */
+        .output-format {
+            background: rgba(10, 12, 20, 0.7);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-silver);
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .output-format-title {
+            color: var(--primary-neon);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-atom"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1 class="neon-text">DEATHCORE-XZ</h1>
+                        <p>Sistem Pencatatan Pelanggaran Siswa</p>
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value flicker" id="total-count">0</div>
+                        <div class="stat-label">Total Data</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value flicker" id="telat-count">0</div>
+                        <div class="stat-label">Telat (T)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value flicker" id="kacu-count">0</div>
+                        <div class="stat-label">Tidak Pakai Kacu (K)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value flicker" id="tk-count">0</div>
+                        <div class="stat-label">Telat & Tidak Kacu (TK)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main>
+            <section class="input-section">
+                <h2 class="section-title"><i class="fas fa-microchip"></i> Input Data Siswa</h2>
+                
+                <div class="input-group">
+                    <label for="manualInput">Input Manual (Format: Nama Kelas Keterangan)</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="manualInput" placeholder="Contoh: Budi 9A T">
+                    </div>
+                    <span class="input-hint">Format: (Nama) (Kelas) (T/K/TK) - Pisahkan dengan spasi</span>
+                </div>
+                
+                <div class="input-group">
+                    <label for="quickAdd">Atau gunakan input terpisah:</label>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.8rem; margin-bottom: 0.8rem;">
+                        <input type="text" id="namaInput" placeholder="Nama Siswa">
+                        <select id="kelasInput">
+                            <option value="">Kelas</option>
+                            <option value="9A">9A</option>
+                            <option value="9B">9B</option>
+                            <option value="9C">9C</option>
+                            <option value="9D">9D</option>
+                            <option value="9E">9E</option>
+                            <option value="9F">9F</option>
+                            <option value="9G">9G</option>
+                            <option value="9H">9H</option>
+                            <option value="9I">9I</option>
+                            <option value="9J">9J</option>
+                            <option value="8A">8A</option>
+                            <option value="8B">8B</option>
+                            <option value="8C">8C</option>
+                            <option value="8D">8D</option>
+                            <option value="8E">8E</option>
+                            <option value="8F">8F</option>
+                            <option value="8G">8G</option>
+                            <option value="8H">8H</option>
+                            <option value="8I">8I</option>
+                            <option value="8J">8J</option>
+                            <option value="8K">8K</option>
+                            <option value="7A">7A</option>
+                            <option value="7B">7B</option>
+                            <option value="7C">7C</option>
+                            <option value="7D">7D</option>
+                            <option value="7E">7E</option>
+                            <option value="7F">7F</option>
+                            <option value="7G">7G</option>
+                            <option value="7H">7H</option>
+                            <option value="7I">7I</option>
+                            <option value="7J">7J</option>
+                            <option value="7K">7K</option>
+                        </select>
+                        <select id="keteranganInput">
+                            <option value="">Keterangan</option>
+                            <option value="T">T (Telat)</option>
+                            <option value="K">K (Tidak Pakai Kacu)</option>
+                            <option value="TK">TK (Telat & Tidak Kacu)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn" id="addBtn">
+                    <i class="fas fa-plus-circle"></i> Tambahkan ke Database
+                </button>
+                
+                <div class="status-indicator">
+                    <div class="status-item">
+                        <div class="status-dot T"></div>
+                        <span>Telat (T)</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-dot K"></div>
+                        <span>Tidak Pakai Kacu (K)</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-dot TK"></div>
+                        <span>Telat & Tidak Kacu (TK)</span>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> Cara Penggunaan</h3>
+                    <ul>
+                        <li>Gunakan input manual dengan format: <code>Nama Kelas Keterangan</code></li>
+                        <li>Contoh: <code>Budi 9A T</code> atau <code>Siti 8C TK</code></li>
+                        <li>Atau gunakan input terpisah di bawahnya</li>
+                        <li>Keterangan: T = Telat, K = Tidak Pakai Kacu, TK = Telat & Tidak Kacu</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section class="output-section">
+                <h2 class="section-title"><i class="fas fa-database"></i> Database Pelanggaran</h2>
+                
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th width="5%">No</th>
+                                <th width="30%">Nama Siswa</th>
+                                <th width="20%">Kelas</th>
+                                <th width="25%">Keterangan</th>
+                                <th width="20%">Tanggal & Jam</th>
+                                <th width="10%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data akan dimasukkan di sini oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="emptyState" class="empty-message">
+                    <i class="fas fa-database"></i>
+                    <h3>Database Kosong</h3>
+                    <p>Tambahkan data siswa menggunakan panel input di sebelah</p>
+                </div>
+                
+                <div class="btn-container">
+                    <button class="btn btn-small" id="exportModalBtn">
+                        <i class="fas fa-file-export"></i> Ekspor Data
+                    </button>
+                    <button class="btn btn-small" id="shareModalBtn">
+                        <i class="fas fa-share-alt"></i> Bagikan Data
+                    </button>
+                    <button class="btn btn-secondary btn-small" id="clearBtn">
+                        <i class="fas fa-trash-alt"></i> Hapus Semua
+                    </button>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>DEATHCORE-XZ &copy; 2026 - Create BY : ¿ZeroGravity? | Powered BY : HyperXZ Company</p>
+            <p>Sistem Pencatatan Pelanggaran Siswa Dengan Teknologi Futuristik</p>
+        </footer>
+    </div>
+
+    <!-- Modal untuk konversi data -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeExportModal">&times;</button>
+            <h2 class="modal-title"><i class="fas fa-file-export"></i> Ekspor Data</h2>
+            
+            <div class="export-options">
+                <a class="export-option" id="exportTxt">
+                    <div class="export-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="export-label">TXT</div>
+                </a>
+                
+                <a class="export-option" id="exportCsv">
+                    <div class="export-icon"><i class="fas fa-file-csv"></i></div>
+                    <div class="export-label">CSV</div>
+                </a>
+                
+                <a class="export-option" id="exportPdf">
+                    <div class="export-icon"><i class="fas fa-file-pdf"></i></div>
+                    <div class="export-label">PDF</div>
+                </a>
+            </div>
+            
+            <h3 style="color: var(--primary-neon); margin: 1.5rem 0 1rem; font-family: 'Orbitron', sans-serif;">
+                <i class="fas fa-eye"></i> Preview Data
+            </h3>
+            <div class="export-preview" id="exportPreview">
+                Data akan ditampilkan di sini...
+            </div>
+            
+            <div style="margin-top: 2rem; text-align: center; color: var(--text-silver); font-size: 0.9rem;">
+                <p><i class="fas fa-info-circle"></i> Pilih format di atas untuk mengunduh data pelanggaran</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk berbagi data -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeShareModal">&times;</button>
+            <h2 class="modal-title"><i class="fas fa-share-alt"></i> Bagikan Data</h2>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <p style="color: var(--text-silver); margin-bottom: 1rem;">Bagikan data pelanggaran siswa ke media sosial:</p>
+                <div class="share-options">
+                    <a class="share-option tooltip" id="shareWhatsApp">
+                        <div class="share-icon whatsapp"><i class="fab fa-whatsapp"></i></div>
+                        <div class="share-label">WhatsApp</div>
+                        <span class="tooltiptext">Bagikan ke WhatsApp</span>
+                    </a>
+                    
+                    <a class="share-option tooltip" id="shareFacebook">
+                        <div class="share-icon facebook"><i class="fab fa-facebook"></i></div>
+                        <div class="share-label">Facebook</div>
+                        <span class="tooltiptext">Bagikan ke Facebook</span>
+                    </a>
+                    
+                    <a class="share-option tooltip" id="shareInstagram">
+                        <div class="share-icon instagram"><i class="fab fa-instagram"></i></div>
+                        <div class="share-label">Instagram</div>
+                        <span class="tooltiptext">Bagikan ke Instagram</span>
+                    </a>
+                    
+                    <a class="share-option tooltip" id="shareTwitter">
+                        <div class="share-icon twitter"><i class="fab fa-twitter"></i></div>
+                        <div class="share-label">Twitter</div>
+                        <span class="tooltiptext">Bagikan ke Twitter</span>
+                    </a>
+                    
+                    <a class="share-option tooltip" id="shareTikTok">
+                        <div class="share-icon tiktok"><i class="fab fa-tiktok"></i></div>
+                        <div class="share-label">TikTok</div>
+                        <span class="tooltiptext">Bagikan ke TikTok</span>
+                    </a>
+                    
+                    <a class="share-option tooltip" id="shareTelegram">
+                        <div class="share-icon telegram"><i class="fab fa-telegram"></i></div>
+                        <div class="share-label">Telegram</div>
+                        <span class="tooltiptext">Bagikan ke Telegram</span>
+                    </a>
+                    
+                    <a class="share-option tooltip" id="shareDiscord">
+                        <div class="share-icon discord"><i class="fab fa-discord"></i></div>
+                        <div class="share-label">Discord</div>
+                        <span class="tooltiptext">Bagikan ke Discord</span>
+                    </a>
+                </div>
+            </div>
+            
+            <h3 style="color: var(--primary-neon); margin: 1.5rem 0 1rem; font-family: 'Orbitron', sans-serif;">
+                <i class="fas fa-clipboard-list"></i> Format Output Data
+            </h3>
+            
+            <div class="output-format" id="outputFormat">
+                Output akan ditampilkan di sini...
+            </div>
+            
+            <h3 style="color: var(--primary-neon); margin: 1.5rem 0 1rem; font-family: 'Orbitron', sans-serif;">
+                <i class="fas fa-link"></i> Tautan Berbagi
+            </h3>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <input type="text" id="shareLink" readonly style="flex: 1; background: rgba(10, 12, 20, 0.8); border: 1px solid rgba(0, 243, 255, 0.3); color: var(--text-platinum); padding: 0.8rem; border-radius: 8px;">
+                <button class="btn btn-small" id="copyLinkBtn" style="width: auto; padding: 0.8rem 1.5rem;">
+                    <i class="fas fa-copy"></i> Salin
+                </button>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center; color: var(--text-silver); font-size: 0.9rem;">
+                <p><i class="fas fa-info-circle"></i> Data akan dibagikan dalam format yang telah ditentukan</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elemen DOM
+            const manualInput = document.getElementById('manualInput');
+            const namaInput = document.getElementById('namaInput');
+            const kelasInput = document.getElementById('kelasInput');
+            const keteranganInput = document.getElementById('keteranganInput');
+            const addBtn = document.getElementById('addBtn');
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            // Modal elements
+            const exportModal = document.getElementById('exportModal');
+            const shareModal = document.getElementById('shareModal');
+            const exportModalBtn = document.getElementById('exportModalBtn');
+            const shareModalBtn = document.getElementById('shareModalBtn');
+            const closeExportModal = document.getElementById('closeExportModal');
+            const closeShareModal = document.getElementById('closeShareModal');
+            
+            // Export buttons
+            const exportTxtBtn = document.getElementById('exportTxt');
+            const exportCsvBtn = document.getElementById('exportCsv');
+            const exportPdfBtn = document.getElementById('exportPdf');
+            
+            // Share buttons
+            const shareWhatsAppBtn = document.getElementById('shareWhatsApp');
+            const shareFacebookBtn = document.getElementById('shareFacebook');
+            const shareInstagramBtn = document.getElementById('shareInstagram');
+            const shareTwitterBtn = document.getElementById('shareTwitter');
+            const shareTikTokBtn = document.getElementById('shareTikTok');
+            const shareTelegramBtn = document.getElementById('shareTelegram');
+            const shareDiscordBtn = document.getElementById('shareDiscord');
+            
+            // Share link elements
+            const shareLink = document.getElementById('shareLink');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            
+            // Preview element
+            const exportPreview = document.getElementById('exportPreview');
+            const outputFormat = document.getElementById('outputFormat');
+            
+            // Statistik
+            const totalCount = document.getElementById('total-count');
+            const telatCount = document.getElementById('telat-count');
+            const kacuCount = document.getElementById('kacu-count');
+            const tkCount = document.getElementById('tk-count');
+            
+            // Data siswa
+            let siswaData = [];
+            
+            // Inisialisasi data dari localStorage
+            loadFromLocalStorage();
+            updateTable();
+            updateStats();
+            updateOutputFormat();
+            
+            // Fungsi untuk memproses input manual
+            manualInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    processManualInput();
+                }
+            });
+            
+            // Fungsi untuk menambah data dari input manual atau input terpisah
+            addBtn.addEventListener('click', function() {
+                // Coba proses input manual dulu jika ada isinya
+                if (manualInput.value.trim() !== '') {
+                    processManualInput();
+                } else {
+                    // Jika input manual kosong, gunakan input terpisah
+                    processSeparateInput();
+                }
+            });
+            
+            // Fungsi untuk memproses input manual
+            function processManualInput() {
+                const input = manualInput.value.trim();
+                if (!input) return;
+                
+                // Memisahkan input menjadi bagian-bagian
+                const parts = input.split(' ');
+                
+                // Validasi format input
+                if (parts.length < 3) {
+                    showNotification('Format input salah! Gunakan format: Nama Kelas Keterangan\nContoh: Budi 9A T', 'error');
+                    return;
+                }
+                
+                // Keterangan adalah bagian terakhir
+                const keterangan = parts[parts.length - 1].toUpperCase();
+                
+                // Validasi keterangan - HANYA menerima T, K, TK
+                if (!['T', 'K', 'TK'].includes(keterangan)) {
+                    showNotification('Keterangan tidak valid! Gunakan: T, K, atau TK\nT = Telat\nK = Tidak Pakai Kacu\nTK = Telat & Tidak Kacu', 'error');
+                    return;
+                }
+                
+                // Kelas adalah bagian sebelum keterangan
+                const kelas = parts[parts.length - 2].toUpperCase();
+                
+                // Validasi kelas - HANYA menerima kelas yang valid sesuai dengan dropdown
+                const validClasses = [
+                    '9A', '9B', '9C', '9D', '9E', '9F', '9G', '9H', '9I', '9J',
+                    '8A', '8B', '8C', '8D', '8E', '8F', '8G', '8H', '8I', '8J', '8K',
+                    '7A', '7B', '7C', '7D', '7E', '7F', '7G', '7H', '7I', '7J', '7K'
+                ];
+                
+                if (!validClasses.includes(kelas)) {
+                    showNotification('Kelas tidak valid! Gunakan kelas 7A-7K, 8A-8K, atau 9A-9J', 'error');
+                    return;
+                }
+                
+                // Nama adalah sisa bagian (semua bagian kecuali 2 terakhir)
+                const nama = parts.slice(0, parts.length - 2).join(' ');
+                
+                // Validasi nama (hanya huruf dan spasi)
+                if (!/^[A-Za-z\s]+$/.test(nama)) {
+                    showNotification('Nama hanya boleh mengandung huruf dan spasi!', 'error');
+                    return;
+                }
+                
+                // Format nama: huruf pertama kapital setiap kata
+                const formattedNama = formatNama(nama);
+                
+                // Tambahkan data
+                addSiswa(formattedNama, kelas, keterangan);
+                
+                // Reset input manual
+                manualInput.value = '';
+            }
+            
+            // Fungsi untuk memproses input terpisah
+            function processSeparateInput() {
+                const nama = namaInput.value.trim();
+                const kelas = kelasInput.value;
+                const keterangan = keteranganInput.value;
+                
+                // Validasi input
+                if (!nama) {
+                    showNotification('Nama harus diisi!', 'error');
+                    return;
+                }
+                
+                if (!kelas) {
+                    showNotification('Kelas harus dipilih!', 'error');
+                    return;
+                }
+                
+                if (!keterangan) {
+                    showNotification('Keterangan harus dipilih!', 'error');
+                    return;
+                }
+                
+                // Validasi nama (hanya huruf dan spasi)
+                if (!/^[A-Za-z\s]+$/.test(nama)) {
+                    showNotification('Nama hanya boleh mengandung huruf dan spasi!', 'error');
+                    return;
+                }
+                
+                // Format nama: huruf pertama kapital setiap kata
+                const formattedNama = formatNama(nama);
+                
+                // Tambahkan data
+                addSiswa(formattedNama, kelas, keterangan);
+                
+                // Reset input terpisah
+                namaInput.value = '';
+                kelasInput.value = '';
+                keteranganInput.value = '';
+            }
+            
+            // Fungsi untuk format nama (huruf pertama kapital setiap kata)
+            function formatNama(nama) {
+                return nama.toLowerCase()
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+            
+            // Fungsi untuk menambahkan siswa ke data
+            function addSiswa(nama, kelas, keterangan) {
+                const now = new Date();
+                const tanggal = now.toLocaleDateString('id-ID');
+                const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                
+                const newSiswa = {
+                    id: Date.now(), // ID unik berdasarkan timestamp
+                    nama: nama,
+                    kelas: kelas,
+                    keterangan: keterangan,
+                    tanggal: tanggal,
+                    jam: jam,
+                    timestamp: `${tanggal}, ${jam}`
+                };
+                
+                siswaData.push(newSiswa);
+                saveToLocalStorage();
+                updateTable();
+                updateStats();
+                updateOutputFormat();
+                
+                // Tampilkan pesan sukses
+                showNotification(`Data "${nama}" berhasil ditambahkan ke database!`, 'success');
+            }
+            
+            // Fungsi untuk menghapus data siswa
+            function deleteSiswa(id) {
+                siswaData = siswaData.filter(siswa => siswa.id !== id);
+                saveToLocalStorage();
+                updateTable();
+                updateStats();
+                updateOutputFormat();
+                
+                // Tampilkan pesan
+                showNotification('Data berhasil dihapus dari database!', 'info');
+            }
+            
+            // Fungsi untuk memperbarui tabel
+            function updateTable() {
+                // Kosongkan tabel
+                tableBody.innerHTML = '';
+                
+                // Periksa apakah ada data
+                if (siswaData.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                
+                // Sembunyikan pesan kosong
+                emptyState.style.display = 'none';
+                
+                // Tambahkan setiap siswa ke tabel
+                siswaData.forEach((siswa, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Tentukan kelas CSS untuk badge berdasarkan keterangan
+                    let badgeClass = '';
+                    let keteranganText = '';
+                    
+                    // Konsistensi: Sesuai dengan input yang diterima
+                    if (siswa.keterangan === 'T') {
+                        badgeClass = 'badge-T';
+                        keteranganText = 'Telat';
+                    } else if (siswa.keterangan === 'K') {
+                        badgeClass = 'badge-K';
+                        keteranganText = 'Tidak Pakai Kacu';
+                    } else if (siswa.keterangan === 'TK') {
+                        badgeClass = 'badge-TK';
+                        keteranganText = 'Telat & Tidak Kacu';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${siswa.nama}</td>
+                        <td>${siswa.kelas}</td>
+                        <td><span class="keterangan-badge ${badgeClass}">${keteranganText}</span></td>
+                        <td>${siswa.timestamp}</td>
+                        <td class="actions">
+                            <button class="action-btn delete-btn" onclick="deleteSiswa(${siswa.id})" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Fungsi untuk memperbarui statistik
+            function updateStats() {
+                totalCount.textContent = siswaData.length;
+                
+                const telat = siswaData.filter(s => s.keterangan === 'T').length;
+                const kacu = siswaData.filter(s => s.keterangan === 'K').length;
+                const tk = siswaData.filter(s => s.keterangan === 'TK').length;
+                
+                telatCount.textContent = telat;
+                kacuCount.textContent = kacu;
+                tkCount.textContent = tk;
+                
+                // Update preview data
+                updateExportPreview();
+                updateShareLink();
+                updateOutputFormat();
+            }
+            
+            // Fungsi untuk memperbarui format output
+            function updateOutputFormat() {
+                if (siswaData.length === 0) {
+                    outputFormat.textContent = 'Tidak ada data untuk ditampilkan.';
+                    shareLink.value = 'Tidak ada data untuk dibagikan.';
+                    return;
+                }
+                
+                // Format data untuk output
+                let outputText = 'Nama Siswa/Kelas/Keterangan/Aksi(Jam)\n\n';
+                
+                // Kelompokkan data berdasarkan nama siswa, kelas, dan keterangan
+                const groupedData = {};
+                
+                siswaData.forEach((siswa) => {
+                    const key = `${siswa.nama}/${siswa.kelas}/${siswa.keterangan}`;
+                    
+                    if (!groupedData[key]) {
+                        groupedData[key] = [];
+                    }
+                    
+                    groupedData[key].push(siswa.jam);
+                });
+                
+                // Tampilkan data yang dikelompokkan
+                Object.keys(groupedData).forEach(key => {
+                    const jamList = groupedData[key].join(', ');
+                    outputText += `${key}(${jamList})\n`;
+                });
+                
+                // Tambahkan statistik
+                outputText += `\n\n📊 DATA PELANGGARAN SISWA - DEATHCORE-XZ 📊\n`;
+                outputText += `📈 Statistik:\n`;
+                outputText += `• Total Data: ${siswaData.length}\n`;
+                outputText += `• Telat (T): ${siswaData.filter(s => s.keterangan === 'T').length}\n`;
+                outputText += `• Tidak Pakai Kacu (K): ${siswaData.filter(s => s.keterangan === 'K').length}\n`;
+                outputText += `• Telat & Tidak Kacu (TK): ${siswaData.filter(s => s.keterangan === 'TK').length}\n`;
+                outputText += `🔗 Sistem: Deathcore-XZ - Pencatatan Pelanggaran Siswa\n`;
+                outputText += `📅 Tanggal: ${new Date().toLocaleDateString('id-ID')}`;
+                
+                outputFormat.textContent = outputText;
+                
+                // Untuk tautan berbagi
+                shareLink.value = outputText;
+            }
+            
+            // Fungsi untuk menghapus semua data
+            clearBtn.addEventListener('click', function() {
+                if (siswaData.length === 0) {
+                    showNotification('Tidak ada data untuk dihapus!', 'error');
+                    return;
+                }
+                
+                if (confirm('Apakah Anda yakin ingin menghapus semua data?\n\nTindakan ini tidak dapat dibatalkan.')) {
+                    siswaData = [];
+                    saveToLocalStorage();
+                    updateTable();
+                    updateStats();
+                    updateOutputFormat();
+                    
+                    showNotification('Semua data berhasil dihapus!', 'info');
+                }
+            });
+            
+            // Modal event listeners
+            exportModalBtn.addEventListener('click', function() {
+                if (siswaData.length === 0) {
+                    showNotification('Tidak ada data untuk diekspor!', 'error');
+                    return;
+                }
+                
+                exportModal.style.display = 'flex';
+                updateExportPreview();
+            });
+            
+            shareModalBtn.addEventListener('click', function() {
+                if (siswaData.length === 0) {
+                    showNotification('Tidak ada data untuk dibagikan!', 'error');
+                    return;
+                }
+                
+                shareModal.style.display = 'flex';
+                updateOutputFormat();
+            });
+            
+            closeExportModal.addEventListener('click', function() {
+                exportModal.style.display = 'none';
+            });
+            
+            closeShareModal.addEventListener('click', function() {
+                shareModal.style.display = 'none';
+            });
+            
+            // Tutup modal saat klik di luar modal
+            window.addEventListener('click', function(event) {
+                if (event.target === exportModal) {
+                    exportModal.style.display = 'none';
+                }
+                if (event.target === shareModal) {
+                    shareModal.style.display = 'none';
+                }
+            });
+            
+            // Fungsi untuk memperbarui preview data
+            function updateExportPreview() {
+                if (siswaData.length === 0) {
+                    exportPreview.textContent = 'Tidak ada data untuk ditampilkan.';
+                    return;
+                }
+                
+                // Format data untuk preview
+                let previewText = 'DATA PELANGGARAN SISWA - DEATHCORE-XZ\n';
+                previewText += `Total Data: ${siswaData.length}\n`;
+                previewText += `Telat (T): ${siswaData.filter(s => s.keterangan === 'T').length}\n`;
+                previewText += `Tidak Pakai Kacu (K): ${siswaData.filter(s => s.keterangan === 'K').length}\n`;
+                previewText += `Telat & Tidak Kacu (TK): ${siswaData.filter(s => s.keterangan === 'TK').length}\n\n`;
+                previewText += 'Daftar Pelanggaran:\n';
+                previewText += 'No. | Nama Siswa | Kelas | Keterangan | Tanggal & Jam\n';
+                previewText += '------------------------------------------------\n';
+                
+                siswaData.forEach((siswa, index) => {
+                    let keteranganText = '';
+                    if (siswa.keterangan === 'T') keteranganText = 'Telat';
+                    else if (siswa.keterangan === 'K') keteranganText = 'Tidak Pakai Kacu';
+                    else if (siswa.keterangan === 'TK') keteranganText = 'Telat & Tidak Kacu';
+                    
+                    previewText += `${index + 1}. ${siswa.nama} | ${siswa.kelas} | ${keteranganText} | ${siswa.timestamp}\n`;
+                });
+                
+                exportPreview.textContent = previewText;
+            }
+            
+            // Fungsi untuk memperbarui tautan berbagi
+            function updateShareLink() {
+                if (siswaData.length === 0) {
+                    shareLink.value = 'Tidak ada data untuk dibagikan.';
+                    return;
+                }
+            }
+            
+            // Fungsi untuk ekspor ke TXT
+            exportTxtBtn.addEventListener('click', function() {
+                if (siswaData.length === 0) return;
+                
+                // Buat format output yang sama dengan tab Bagikan
+                let txtContent = 'Nama Siswa/Kelas/Keterangan/Aksi(Jam)\n\n';
+                
+                // Kelompokkan data berdasarkan nama siswa, kelas, dan keterangan
+                const groupedData = {};
+                
+                siswaData.forEach((siswa) => {
+                    const key = `${siswa.nama}/${siswa.kelas}/${siswa.keterangan}`;
+                    
+                    if (!groupedData[key]) {
+                        groupedData[key] = [];
+                    }
+                    
+                    groupedData[key].push(siswa.jam);
+                });
+                
+                // Tampilkan data yang dikelompokkan
+                Object.keys(groupedData).forEach(key => {
+                    const jamList = groupedData[key].join(', ');
+                    txtContent += `${key}(${jamList})\n`;
+                });
+                
+                // Tambahkan statistik
+                txtContent += `\n\n📊 DATA PELANGGARAN SISWA - DEATHCORE-XZ 📊\n`;
+                txtContent += `📈 Statistik:\n`;
+                txtContent += `• Total Data: ${siswaData.length}\n`;
+                txtContent += `• Telat (T): ${siswaData.filter(s => s.keterangan === 'T').length}\n`;
+                txtContent += `• Tidak Pakai Kacu (K): ${siswaData.filter(s => s.keterangan === 'K').length}\n`;
+                txtContent += `• Telat & Tidak Kacu (TK): ${siswaData.filter(s => s.keterangan === 'TK').length}\n`;
+                txtContent += `🔗 Sistem: Deathcore-XZ - Pencatatan Pelanggaran Siswa\n`;
+                txtContent += `📅 Tanggal: ${new Date().toLocaleDateString('id-ID')}\n\n`;
+                txtContent += '=========================================\n';
+                txtContent += 'DEATHCORE-XZ - Sistem Pencatatan Pelanggaran Siswa\n';
+                txtContent += 'Powered by: HyperXZ Company\n';
+                txtContent += 'Dibuat oleh: ¿ZeroGravity?\n';
+                
+                // Buat blob dan download
+                const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `deathcore-xz-data-${new Date().toISOString().slice(0,10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                showNotification('Data berhasil diekspor ke file TXT!', 'success');
+                exportModal.style.display = 'none';
+            });
+            
+            // Fungsi untuk ekspor ke CSV
+            exportCsvBtn.addEventListener('click', function() {
+                if (siswaData.length === 0) return;
+                
+                // Format data untuk diekspor
+                let csvData = 'No,Nama,Kelas,Keterangan,Jam,Tanggal\n';
+                
+                siswaData.forEach((siswa, index) => {
+                    let keteranganText = '';
+                    if (siswa.keterangan === 'T') keteranganText = 'Telat';
+                    else if (siswa.keterangan === 'K') keteranganText = 'Tidak Pakai Kacu';
+                    else if (siswa.keterangan === 'TK') keteranganText = 'Telat & Tidak Kacu';
+                    
+                    csvData += `${index + 1},${siswa.nama},${siswa.kelas},${keteranganText},${siswa.jam},${siswa.tanggal}\n`;
+                });
+                
+                // Buat blob dan download
+                const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `deathcore-xz-data-${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                showNotification('Data berhasil diekspor ke file CSV!', 'success');
+                exportModal.style.display = 'none';
+            });
+            
+            // Fungsi untuk ekspor ke PDF
+            exportPdfBtn.addEventListener('click', function() {
+                if (siswaData.length === 0) return;
+                
+                // Buat dokumen PDF
+                const doc = new jsPDF();
+                
+                // Judul
+                doc.setFontSize(20);
+                doc.setTextColor(0, 100, 255);
+                doc.text('DATA PELANGGARAN SISWA', 105, 15, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('DEATHCORE-XZ - Sistem Pencatatan Pelanggaran Siswa', 105, 22, { align: 'center' });
+                doc.text(`Dibuat pada: ${new Date().toLocaleString('id-ID')}`, 105, 29, { align: 'center' });
+                
+                // Statistik
+                doc.setFontSize(14);
+                doc.setTextColor(0, 100, 255);
+                doc.text('STATISTIK', 20, 40);
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Total Data: ${siswaData.length}`, 20, 47);
+                doc.text(`Telat (T): ${siswaData.filter(s => s.keterangan === 'T').length}`, 20, 52);
+                doc.text(`Tidak Pakai Kacu (K): ${siswaData.filter(s => s.keterangan === 'K').length}`, 20, 57);
+                doc.text(`Telat & Tidak Kacu (TK): ${siswaData.filter(s => s.keterangan === 'TK').length}`, 20, 62);
+                
+                // Format output khusus
+                doc.setFontSize(14);
+                doc.setTextColor(0, 100, 255);
+                doc.text('FORMAT OUTPUT:', 20, 72);
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                let startY = 79;
+                
+                // Kelompokkan data
+                const groupedData = {};
+                
+                siswaData.forEach((siswa) => {
+                    const key = `${siswa.nama}/${siswa.kelas}/${siswa.keterangan}`;
+                    
+                    if (!groupedData[key]) {
+                        groupedData[key] = [];
+                    }
+                    
+                    groupedData[key].push(siswa.jam);
+                });
+                
+                // Tampilkan data yang dikelompokkan
+                Object.keys(groupedData).forEach(key => {
+                    const jamList = groupedData[key].join(', ');
+                    const text = `${key}(${jamList})`;
+                    
+                    // Cek apakah perlu halaman baru
+                    if (startY > 270) {
+                        doc.addPage();
+                        startY = 20;
+                    }
+                    
+                    doc.text(text, 20, startY);
+                    startY += 7;
+                });
+                
+                // Footer
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text('DEATHCORE-XZ © 2026 - Dibuat oleh: ¿ZeroGravity? | Powered by: HyperXZ Company', 105, 285, { align: 'center' });
+                    doc.text(`Halaman ${i} dari ${pageCount}`, 195, 285, { align: 'right' });
+                }
+                
+                // Simpan PDF
+                doc.save(`deathcore-xz-data-${new Date().toISOString().slice(0,10)}.pdf`);
+                
+                showNotification('Data berhasil diekspor ke file PDF!', 'success');
+                exportModal.style.display = 'none';
+            });
+            
+            // Fungsi untuk berbagi ke WhatsApp
+            shareWhatsAppBtn.addEventListener('click', function() {
+                const text = encodeURIComponent(shareLink.value);
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+                shareModal.style.display = 'none';
+                showNotification('Membuka WhatsApp untuk berbagi data...', 'success');
+            });
+            
+            // Fungsi untuk berbagi ke Facebook
+            shareFacebookBtn.addEventListener('click', function() {
+                const text = encodeURIComponent(shareLink.value);
+                window.open(`https://www.facebook.com/sharer/sharer.php?quote=${text}`, '_blank');
+                shareModal.style.display = 'none';
+                showNotification('Membuka Facebook untuk berbagi data...', 'success');
+            });
+            
+            // Fungsi untuk berbagi ke Instagram
+            shareInstagramBtn.addEventListener('click', function() {
+                // Instagram tidak mendukung sharing teks langsung
+                showNotification('Untuk berbagi ke Instagram, salin teks dan tempel di deskripsi postingan.', 'info');
+                shareModal.style.display = 'none';
+            });
+            
+            // Fungsi untuk berbagi ke Twitter
+            shareTwitterBtn.addEventListener('click', function() {
+                const text = encodeURIComponent(shareLink.value.substring(0, 280)); // Batas karakter Twitter
+                window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+                shareModal.style.display = 'none';
+                showNotification('Membuka Twitter untuk berbagi data...', 'success');
+            });
+            
+            // Fungsi untuk berbagi ke TikTok
+            shareTikTokBtn.addEventListener('click', function() {
+                // TikTok tidak mendukung sharing teks langsung
+                showNotification('Untuk berbagi ke TikTok, salin teks dan tempel di deskripsi video.', 'info');
+                shareModal.style.display = 'none';
+            });
+            
+            // Fungsi untuk berbagi ke Telegram
+            shareTelegramBtn.addEventListener('click', function() {
+                const text = encodeURIComponent(shareLink.value);
+                window.open(`https://t.me/share/url?text=${text}`, '_blank');
+                shareModal.style.display = 'none';
+                showNotification('Membuka Telegram untuk berbagi data...', 'success');
+            });
+            
+            // Fungsi untuk berbagi ke Discord
+            shareDiscordBtn.addEventListener('click', function() {
+                // Discord tidak mendukung sharing teks langsung via web
+                showNotification('Untuk berbagi ke Discord, salin teks dan tempel di channel.', 'info');
+                shareModal.style.display = 'none';
+            });
+            
+            // Fungsi untuk menyalin tautan
+            copyLinkBtn.addEventListener('click', function() {
+                shareLink.select();
+                shareLink.setSelectionRange(0, 99999); // Untuk mobile
+                document.execCommand('copy');
+                showNotification('Teks berhasil disalin ke clipboard!', 'success');
+            });
+            
+            // Fungsi untuk menyimpan data ke localStorage
+            function saveToLocalStorage() {
+                localStorage.setItem('deathcore-xz-data', JSON.stringify(siswaData));
+            }
+            
+            // Fungsi untuk memuat data dari localStorage
+            function loadFromLocalStorage() {
+                const savedData = localStorage.getItem('deathcore-xz-data');
+                if (savedData) {
+                    siswaData = JSON.parse(savedData);
+                }
+            }
+            
+            // Fungsi untuk menampilkan notifikasi futuristik
+            function showNotification(message, type = 'info') {
+                // Tentukan warna berdasarkan tipe
+                let bgColor, borderColor, icon;
+                
+                switch(type) {
+                    case 'success':
+                        bgColor = 'rgba(0, 243, 255, 0.1)';
+                        borderColor = 'var(--primary-neon)';
+                        icon = '<i class="fas fa-check-circle" style="color: var(--primary-neon);"></i>';
+                        break;
+                    case 'error':
+                        bgColor = 'rgba(255, 0, 255, 0.1)';
+                        borderColor = 'var(--accent-magenta)';
+                        icon = '<i class="fas fa-exclamation-triangle" style="color: var(--accent-magenta);"></i>';
+                        break;
+                    default:
+                        bgColor = 'rgba(255, 204, 0, 0.1)';
+                        borderColor = 'var(--accent-gold)';
+                        icon = '<i class="fas fa-info-circle" style="color: var(--accent-gold);"></i>';
+                }
+                
+                // Buat elemen notifikasi
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 30px;
+                    right: 30px;
+                    background: ${bgColor};
+                    backdrop-filter: blur(10px);
+                    color: var(--text-platinum);
+                    padding: 1.2rem 1.8rem;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+                    z-index: 1000;
+                    animation: slideIn 0.4s ease-out;
+                    max-width: 350px;
+                    border: 1px solid ${borderColor};
+                    font-family: 'Rajdhani', sans-serif;
+                    letter-spacing: 0.5px;
+                `;
+                
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 0.8rem;">
+                        <div style="font-size: 1.3rem;">${icon}</div>
+                        <div>${message}</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Hapus notifikasi setelah 4 detik
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.4s ease-out';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 400);
+                }, 4000);
+                
+                // Tambahkan animasi CSS jika belum ada
+                if (!document.querySelector('#notification-animations')) {
+                    const style = document.createElement('style');
+                    style.id = 'notification-animations';
+                    style.textContent = `
+                        @keyframes slideIn {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                        @keyframes slideOut {
+                            from { transform: translateX(0); opacity: 1; }
+                            to { transform: translateX(100%); opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            // Fungsi untuk animasi statistik
+            function animateStats() {
+                const statValues = [totalCount, telatCount, kacuCount, tkCount];
+                statValues.forEach(stat => {
+                    stat.style.transform = 'scale(1.3)';
+                    setTimeout(() => {
+                        stat.style.transform = 'scale(1)';
+                    }, 300);
+                });
+            }
+            
+            // Ekspos fungsi deleteSiswa ke global scope agar dapat dipanggil dari onclick
+            window.deleteSiswa = deleteSiswa;
+        });
+    </script>
+</body>
+</html>
